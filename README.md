@@ -1,87 +1,158 @@
-# Final Lab: Image Classification with Caltech-101 Dataset and Grad-CAM
+# **Final Lab: Image Classification with Caltech-101 Dataset and Grad-CAM**
 
-## Objective
-The goal of this project was to build, train, and evaluate a Convolutional Neural Network (CNN) for image classification using the **Caltech-101 dataset**. Additionally, **Grad-CAM** (Gradient-weighted Class Activation Mapping) was used to provide explainability for model predictions.
-
----
-
-## Dataset Overview
-- **Caltech-101** contains images from 101 object categories and 1 background category.
-- Approximately **9,146 images** in total, with 40–800 images per category.
-- Images were resized and augmented to maintain consistency and improve generalization.
+## **Objective**
+This project aimed to:
+1. Build, train, and evaluate three different CNN architectures for image classification using the **Caltech-101 dataset**.
+2. Implement **Grad-CAM** (Gradient-weighted Class Activation Mapping) to provide visual explainability for model predictions.
 
 ---
 
-## Methodology
+## **Dataset Overview**
+- **Caltech-101** dataset includes:
+  - 101 object categories and 1 background category.
+  - ~9,146 images in total, with 40–800 images per category.
+- Dataset preprocessing involved:
+  - Resizing images to `(128, 128)`.
+  - Applying data augmentation (random flips, rotations, color jittering).
+  - Normalizing images using ImageNet mean and standard deviation values.
+
+---
+
+## **Methodology**
 
 ### **1. Dataset Preprocessing**
-- Images were preprocessed using PyTorch:
-  - Resized to `(128, 128)`.
-  - Data augmentation techniques included:
-    - Random horizontal/vertical flips.
+- Preprocessing was implemented using PyTorch:
+  - Images were resized to `(128, 128)`.
+  - Data augmentation included:
+    - Random horizontal and vertical flips.
     - Random rotations.
-    - Color jittering.
-  - Normalized with ImageNet mean and standard deviation values.
-- The dataset was split into:
-  - **Training Set**: 80%.
-  - **Validation Set**: 10%.
-  - **Test Set**: 10%.
-
-### **2. Model Architecture**
-- The **ResNet50** pre-trained model was used.
-- The final fully connected layer was adjusted for **102 classes**.
-- Optimizer: **Adam** with a learning rate of `0.001`.
-- Loss Function: **CrossEntropyLoss**.
-
-### **3. Training and Evaluation**
-- The model was trained for **10 epochs**.
-- Training and validation accuracy/loss were tracked.
-- The test accuracy achieved was **0.55%**, which indicates potential overfitting or dataset complexity. Recommendations were provided for improvement.
-
-### **4. Explainable AI (Grad-CAM)**
-- **Grad-CAM** was implemented to provide explainability by highlighting the regions of the image that contributed most to the model's predictions.
-- Heatmaps were generated for several test images, showcasing the areas of focus for the CNN.
+    - Color jittering for brightness, contrast, saturation, and hue.
+  - Dataset Splits:
+    - **Training Set**: 80%.
+    - **Validation Set**: 10%.
+    - **Test Set**: 10%.
 
 ---
 
-## Results
+### **2. Model Architectures**
+Three CNN architectures were used:
 
-### **Training Metrics**
-- Training Loss: Decreased steadily over epochs.
-- Validation Accuracy: Showed minor improvements, but the model struggled to generalize well to unseen data.
+#### **Model 1: ResNet50**
+- A pre-trained **ResNet50** was fine-tuned for **102 classes** (matching the dataset).
+- Training Details:
+  - Optimizer: Adam
+  - Learning Rate: `0.001`
+  - Loss Function: CrossEntropyLoss
+- **Performance**:
+  - Test Accuracy: **0.55%**
+  - Grad-CAM heatmaps showed poor attention to relevant image regions.
 
-### **Test Performance**
-- Test Accuracy: **0.55%**.
-- Classification Report: Highlighted misclassifications across multiple categories, suggesting the need for better balancing and augmentation.
+#### **Model 2: ResNet18**
+- A smaller, pre-trained **ResNet18** was implemented to address overfitting.
+- Training Details:
+  - Same optimizer and learning rate as ResNet50.
+- **Issue**:
+  - **Execution time was excessively long**, leading to runtime termination.
+- This highlighted the need for runtime optimization or extended resources.
 
-### **Grad-CAM Insights**
-- Grad-CAM visualizations revealed the model's focus on certain regions of test images.
-- These insights helped identify areas where the model struggled to differentiate between classes.
-
----
-
-## Challenges and Solutions
-
-### **Challenges**
-1. **Dataset Imbalance**: Some classes had significantly fewer images.
-2. **Model Complexity**: ResNet50 might have been too complex for the dataset size.
-3. **Low Test Accuracy**: Despite adequate training, the model's performance on the test set was low.
-
-### **Solutions**
-1. Used **data augmentation** to artificially increase variability in the training set.
-2. Recommended using a simpler model (e.g., ResNet18) to reduce overfitting.
-3. Proposed **class-weighted loss functions** to handle class imbalance.
-
----
-
-## Conclusion
-This project successfully demonstrated the use of CNNs for image classification and explainability using Grad-CAM. While the model's performance can be further improved, the Grad-CAM visualizations provided valuable insights into its decision-making process.
+#### **Model 3: EfficientNet-B0**
+- A lightweight **EfficientNet-B0** was implemented to balance computational efficiency and performance.
+- Training Details:
+  - Reduced batch size to avoid runtime termination.
+  - Optimizer: Adam with a learning rate of `0.0001`.
+- **Performance**:
+  - Test Accuracy: **~2.5%**
+  - Grad-CAM heatmaps showed better focus on relevant regions compared to ResNet50.
 
 ---
 
-## Future Work
-- Explore simpler architectures (e.g., MobileNetV2, ResNet18).
-- Use advanced data augmentation techniques (e.g., MixUp or CutMix).
-- Apply hyperparameter tuning to find optimal training configurations.
+### **3. Grad-CAM Implementation**
+- **Objective**: Grad-CAM was used to explain model predictions by visualizing the regions of input images that contributed most to the model's decision.
+- **Target Layer**:
+  - ResNet: `layer4[-1]` (final convolutional block).
+  - EfficientNet: `blocks[-1]` (final convolutional block).
+- **Visualizations**:
+  - Grad-CAM heatmaps provided insights into model focus areas.
+  - While ResNet50 struggled with irrelevant focus areas, EfficientNet-B0 showed improved attention.
+
+---
+
+## **Results**
+
+### **1. Training Metrics**
+| **Model**         | **Training Accuracy** | **Validation Accuracy** | **Test Accuracy** | **Runtime**                |
+|--------------------|-----------------------|--------------------------|-------------------|----------------------------|
+| **ResNet50**       | ~85%                 | ~0.8%                   | **0.55%**         | Completed successfully.    |
+| **ResNet18**       | N/A                  | N/A                     | **N/A**           | **Runtime terminated.**    |
+| **EfficientNet-B0**| ~90%                 | ~2%                     | **2.5%**          | Completed with longer time.|
+
+---
+
+### **2. Grad-CAM Results**
+- **ResNet50**:
+  - Heatmaps often highlighted irrelevant regions, leading to misclassifications.
+- **ResNet18**:
+  - Grad-CAM results could not be obtained due to runtime termination.
+- **EfficientNet-B0**:
+  - Grad-CAM heatmaps demonstrated better attention to relevant image regions, correlating with improved test performance.
+
+---
+
+## **Challenges and Limitations**
+
+1. **Dataset Imbalance**:
+   - Some classes contained significantly fewer samples, impacting model learning.
+2. **Model Overfitting**:
+   - ResNet50 overfitted the training data, leading to poor test accuracy.
+3. **Runtime Limitations**:
+   - ResNet18 training could not be completed due to excessive runtime.
+4. **Low Test Accuracy**:
+   - Despite successful training, ResNet50 and EfficientNet-B0 achieved low test accuracy, indicating potential issues with dataset size and diversity.
+
+---
+
+## **Recommendations**
+
+1. **Simplify the Model Architecture**:
+   - Use smaller models like MobileNetV2 to reduce runtime and improve scalability.
+2. **Improve Data Augmentation**:
+   - Implement advanced techniques like **MixUp** or **CutMix** for better generalization.
+3. **Use Weighted Loss**:
+   - Address class imbalance by assigning weights to classes in the loss function.
+4. **Extend Runtime Resources**:
+   - Use cloud services or platforms like **Google Colab Pro** for longer runtime.
+5. **Hyperparameter Tuning**:
+   - Experiment with different learning rates, optimizers, and batch sizes.
+
+---
+
+## **Conclusion**
+This project demonstrated the application of CNNs for image classification using the Caltech-101 dataset and Grad-CAM for explainability. While the third model (EfficientNet-B0) showed some improvement in test accuracy and Grad-CAM results, further efforts are needed to address dataset complexity, class imbalance, and runtime constraints.
+
+---
+
+## **Future Work**
+1. Investigate additional lightweight architectures like MobileNetV2 or ShuffleNet.
+2. Experiment with larger datasets or pre-trained models on similar datasets.
+3. Use distributed training or cloud resources to handle longer runtime requirements.
+
+---
+
+## **How to Run**
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/MdShakil-Hossain/366-Final-Lab.git
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Open the Jupyter Notebook and run all cells.
+
+---
+
+## **Acknowledgments**
+- **Caltech** for the dataset.
+- **PyTorch** and **Grad-CAM** for tools used in model training and explainability.
 
 ---
